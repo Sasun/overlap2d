@@ -22,10 +22,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.commons.MsgAPI;
@@ -58,6 +55,10 @@ public class SelectionTool extends SimpleTool {
     private boolean isCastingRectangle = false;
 
     private Rectangle tmp = new Rectangle();
+    private final EntityBounds tmpEntityBounds = new EntityBounds();
+    private final float[] draggedRectangle = new float[8];
+    private final Polygon tmp1Polygon = new Polygon();
+    private final Polygon tmp2Polygon = new Polygon();
 
     private Vector2 directionVector = null;
 
@@ -358,14 +359,25 @@ public class SelectionTool extends SimpleTool {
         Set<Entity> curr = new HashSet<>();
         Rectangle sR = sandbox.screenToWorld(sandbox.selectionRec.getRect());
 
+        draggedRectangle[0] = sR.x;
+        draggedRectangle[1] = sR.y;
+        draggedRectangle[2] = sR.x + sR.width;
+        draggedRectangle[3] = sR.y;
+        draggedRectangle[4] = sR.x + sR.width;
+        draggedRectangle[5] = sR.y + sR.height;
+        draggedRectangle[6] = sR.x;
+        draggedRectangle[7] = sR.y + sR.height;
+
         for (Entity entity : freeItems) {
             transformComponent = ComponentRetriever.get(entity, TransformComponent.class);
             dimensionsComponent = ComponentRetriever.get(entity, DimensionsComponent.class);
 
             //if (!freeItems.get(i).isLockedByLayer() && Intersector.overlaps(sR, new Rectangle(entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight()))) {
 
-            EntityBounds entityBounds = new EntityBounds(entity);
-            boolean intersects = Intersector.overlaps(sR, tmp.set(entityBounds.getVisualX(), entityBounds.getVisualY(), entityBounds.getVisualWidth(), entityBounds.getVisualHeight()));
+            tmpEntityBounds.setEntity(entity);
+            tmp1Polygon.setVertices(draggedRectangle);
+            tmp2Polygon.setVertices(tmpEntityBounds.getBoundPoints());
+            boolean intersects = Intersector.overlapConvexPolygons(tmp1Polygon, tmp2Polygon);
             if (isEntityVisible(entity) && intersects) {
                 curr.add(entity);
             }

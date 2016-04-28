@@ -308,6 +308,9 @@ public class SandboxMediator extends SimpleMediator<Sandbox> {
                 if (keycode == Input.Keys.V) {
                     facade.sendNotification(MsgAPI.ACTION_PASTE);
                 }
+//                if(keycode == Input.Keys.T){
+//                    facade.sendNotification(MsgAPI.ITEM_SELECTION_CHANGED);
+//                }
                 if(keycode == Input.Keys.Z) {
                     if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
                         CommandManager commandManager = facade.retrieveProxy(CommandManager.NAME);

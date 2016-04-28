@@ -53,15 +53,19 @@ public class TintButton extends Group {
 
         setWidth(borderImg.getWidth());
         setHeight(borderImg.getHeight());
+        colorValue = new Color(1, 1, 1, 1);
     }
 
     public Color getColorValue() {
-        return colorValue;
+        System.out.println("getColorValue = " + colorValue.toString());
+//        return colorValue;
+        return new Color(0, 0, 1, 1);
     }
 
     public void setColorValue(Color color) {
+        System.out.println("setColorValue = " + color.toString());
         colorImg.setColor(color);
-        colorValue = new Color(color);
+        colorValue.set(color);
     }
 
 }

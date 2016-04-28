@@ -101,6 +101,7 @@ public class EntityUtils {
         return new Vector2(transformComponent.x, transformComponent.y);
     }
 
+    // TODO  calculate using matrices
     public static Vector2 getRightTopPoint(Set<Entity> entities) {
         if(entities.size() == 0) return null;
 

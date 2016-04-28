@@ -22,9 +22,13 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.utils.Array;
 import com.commons.MsgAPI;
+import com.uwsoft.editor.Overlap2DFacade;
 import com.uwsoft.editor.renderer.utils.ComponentRetriever;
 import com.uwsoft.editor.utils.runtime.ComponentCloner;
 import com.uwsoft.editor.utils.runtime.EntityUtils;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by azakhary on 6/3/2015.
@@ -51,7 +55,9 @@ public class UpdateEntityComponentsCommand extends EntityModifyRevertableCommand
             ComponentCloner.set(originalComponent, components.get(i));
         }
 
-
+        Set<Entity> entityHashSet = new HashSet<>();
+        entityHashSet.add(entity);
+        Overlap2DFacade.getInstance().sendNotification(MsgAPI.ITEM_SELECTION_CHANGED, entityHashSet);
     }
 
     @Override

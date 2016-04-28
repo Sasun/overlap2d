@@ -38,6 +38,7 @@ import com.uwsoft.editor.renderer.utils.ComponentRetriever;
 import com.uwsoft.editor.utils.runtime.ComponentCloner;
 import com.uwsoft.editor.utils.runtime.EntityUtils;
 import com.uwsoft.editor.view.stage.Sandbox;
+import com.uwsoft.editor.view.stage.SandboxMediator;
 import com.uwsoft.editor.view.ui.properties.UIItemPropertiesMediator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -65,6 +66,9 @@ public class UIBasicItemPropertiesMediator extends UIItemPropertiesMediator<Enti
     public UIBasicItemPropertiesMediator() {
         super(NAME, new UIBasicItemProperties());
     }
+
+    Object object1;
+    Object object2;
 
     @Override
     public void onRegister() {
@@ -105,12 +109,16 @@ public class UIBasicItemPropertiesMediator extends UIItemPropertiesMediator<Enti
                 CustomColorPicker picker = new CustomColorPicker(new ColorPickerAdapter() {
                     @Override
                     public void finished(Color newColor) {
+                        System.out.println("finished = " + newColor);
                         viewComponent.setTintColor(newColor);
                         facade.sendNotification(viewComponent.getUpdateEventName());
                     }
 
                     @Override
                     public void changed(Color newColor) {
+                        System.out.println("changed  = " + newColor.toString());
+                        System.out.println("changed : hashCode = " + viewComponent.hashCode());
+                        object1 = viewComponent;
                         viewComponent.setTintColor(newColor);
                         facade.sendNotification(viewComponent.getUpdateEventName());
                     }
@@ -165,7 +173,7 @@ public class UIBasicItemPropertiesMediator extends UIItemPropertiesMediator<Enti
         viewComponent.setRotationValue(transformComponent.rotation + "");
         viewComponent.setScaleXValue(transformComponent.scaleX + "");
         viewComponent.setScaleYValue(transformComponent.scaleY + "");
-        viewComponent.setTintColor(tintComponent.color);
+//        viewComponent.setTintColor(tintComponent.color);
 
         // non components
         Array<String> componentsToAddList = new Array<>();
@@ -197,12 +205,21 @@ public class UIBasicItemPropertiesMediator extends UIItemPropertiesMediator<Enti
         dimensionComponent.width = NumberUtils.toFloat(viewComponent.getWidthValue());
         dimensionComponent.height = NumberUtils.toFloat(viewComponent.getHeightValue());
 
+        if (dimensionComponent.boundBox != null) {
+            dimensionComponent.boundBox.width = dimensionComponent.width;
+            dimensionComponent.boundBox.height = dimensionComponent.height;
+        }
+
         // TODO: manage width and height
         transformComponent.rotation = NumberUtils.toFloat(viewComponent.getRotationValue(), transformComponent.rotation);
     	transformComponent.scaleX = (viewComponent.getFlipH() ? -1 : 1) * NumberUtils.toFloat(viewComponent.getScaleXValue(), transformComponent.scaleX);
     	transformComponent.scaleY = (viewComponent.getFlipV() ? -1 : 1) * NumberUtils.toFloat(viewComponent.getScaleYValue(), transformComponent.scaleY);
+        object2 = viewComponent;
         Color color = viewComponent.getTintColor();
         tintComponent.color.set(color);
+
+        System.out.println("color = " + color.toString());
+        System.out.println("color : hashCode = " + viewComponent.hashCode());
 
         Array<Component> componentsToUpdate = new Array<>();
         componentsToUpdate.add(transformComponent);
