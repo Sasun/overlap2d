@@ -20,8 +20,9 @@ package com.uwsoft.editor.view.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Array;
 import com.commons.MsgAPI;
-import com.kotcrab.vis.ui.util.dialog.DialogUtils;
+import com.kotcrab.vis.ui.util.dialog.Dialogs;
 import com.kotcrab.vis.ui.util.dialog.InputDialogListener;
 import com.kotcrab.vis.ui.widget.file.FileChooser;
 import com.kotcrab.vis.ui.widget.file.FileChooserAdapter;
@@ -88,11 +89,6 @@ public class Overlap2DMenuBarMediator extends SimpleMediator<Overlap2DMenuBar> {
     public void handleNotification(Notification notification) {
         super.handleNotification(notification);
         String type = notification.getType();
-
-        if (notification.getName().equals(Overlap2DMenuBar.RECENT_LIST_MODIFIED)) {
-            PreferencesManager prefs = PreferencesManager.getInstance();
-            viewComponent.reInitRecent(prefs.getRecentHistory());
-        }
 
         if (type == null) {
             handleGeneralNotification(notification);
@@ -167,7 +163,7 @@ public class Overlap2DMenuBarMediator extends SimpleMediator<Overlap2DMenuBar> {
                 //showDialog("showImportDialog");
                 break;
             case Overlap2DMenuBar.CLEAR_RECENTS:
-                clearRecents();
+                viewComponent.clearRecents();
                 break;
             case Overlap2DMenuBar.EXPORT:
                 facade.sendNotification(MsgAPI.ACTION_EXPORT_PROJECT);
@@ -179,7 +175,7 @@ public class Overlap2DMenuBarMediator extends SimpleMediator<Overlap2DMenuBar> {
                 Gdx.app.exit();
                 break;
             case Overlap2DMenuBar.NEW_SCENE:
-                DialogUtils.showInputDialog(sandbox.getUIStage(), "Create New Scene", "Scene Name : ", new InputDialogListener() {
+                Dialogs.showInputDialog(sandbox.getUIStage(), "Create New Scene", "Scene Name : ", new InputDialogListener() {
                     @Override
                     public void finished(String input) {
                         if (input == null || input.equals("")) {
@@ -201,7 +197,7 @@ public class Overlap2DMenuBarMediator extends SimpleMediator<Overlap2DMenuBar> {
                 sceneMenuItemClicked(notification.getBody());
                 break;
             case Overlap2DMenuBar.DELETE_CURRENT_SCENE:
-                DialogUtils.showConfirmDialog(sandbox.getUIStage(),
+                Dialogs.showConfirmDialog(sandbox.getUIStage(),
                         "Delete Scene", "Do you realy want to delete '" + projectManager.currentProjectVO.lastOpenScene + "' scene?",
                         new String[]{"Delete", "Cancel"}, new Integer[]{0, 1}, result -> {
                             if (result == 0) {
@@ -241,10 +237,15 @@ public class Overlap2DMenuBarMediator extends SimpleMediator<Overlap2DMenuBar> {
 
         fileChooser.setListener(new FileChooserAdapter() {
             @Override
-            public void selected(FileHandle file) {
-                String path = file.file().getAbsolutePath();
-                if (path.length() > 0) {
-                    projectManager.openProjectFromPath(path);
+            public void selected(Array<FileHandle> files) {
+                String path;// = file.file().getAbsolutePath();
+                for (FileHandle f : files) {
+                    path = f.file().getAbsolutePath();
+
+                    if (path.length() > 0) {
+                        projectManager.openProjectFromPath(path);
+                        break;  //Added break, since I don't think this has support for opening multiple projects
+                    }
                 }
             }
         });
@@ -257,12 +258,6 @@ public class Overlap2DMenuBarMediator extends SimpleMediator<Overlap2DMenuBar> {
         prefs.pushHistory(path);
         Sandbox sandbox = Sandbox.getInstance();
         projectManager.openProjectFromPath(path);
-    }
-
-    public void clearRecents() {
-        PreferencesManager prefs = PreferencesManager.getInstance();
-        prefs.clearHistory();
-        viewComponent.reInitRecent(prefs.getRecentHistory());
     }
 
     public void sceneMenuItemClicked(String sceneName) {

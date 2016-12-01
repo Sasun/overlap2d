@@ -18,10 +18,15 @@
 
 package com.uwsoft.editor.view.menu;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.kotcrab.vis.ui.widget.MenuItem;
 import com.kotcrab.vis.ui.widget.PopupMenu;
+import com.kotcrab.vis.ui.widget.Separator;
 import com.uwsoft.editor.Overlap2DFacade;
 import com.uwsoft.editor.data.manager.PreferencesManager;
 import com.uwsoft.editor.event.MenuItemListener;
@@ -69,7 +74,7 @@ public class Overlap2DMenuBar extends CustomMenuBar {
 
 
     private static final String TAG = Overlap2DMenuBar.class.getCanonicalName();
-    private final FileMenu fileMenu;
+    public final FileMenu fileMenu;
     private final String maskKey;
     private final EditMenu editMenu;
     private final WindowMenu windowMenu;
@@ -97,8 +102,11 @@ public class Overlap2DMenuBar extends CustomMenuBar {
         fileMenu.reInitScenes(scenes);
     }
 
-    public void reInitRecent(ArrayList<String> paths) {
-        fileMenu.reInitRecent(paths);
+    public void clearRecents() {
+        PreferencesManager prefs = PreferencesManager.getInstance();
+        prefs.clearHistory();
+        fileMenu.recentProjectsPopupMenu.clear();
+        fileMenu.addRecentOpenedItems(prefs.getRecentHistory());
     }
 
     public void setProjectOpen(boolean open) {
@@ -162,7 +170,7 @@ public class Overlap2DMenuBar extends CustomMenuBar {
     }
 
 
-    private class FileMenu extends O2DMenu {
+    public class FileMenu extends O2DMenu {
 
         private final PopupMenu scenesPopupMenu;
         private final Array<MenuItem> sceneMenuItems;
@@ -176,8 +184,10 @@ public class Overlap2DMenuBar extends CustomMenuBar {
         private final MenuItem exportLibraryItem;
 
         private final PopupMenu recentProjectsPopupMenu;
-        private final Array<MenuItem> recentProjectsMenuItems;
+
         private final MenuItem recentProjectsMenuItem;
+        private final MenuItem menuItem = new MenuItem("Clear list", new MenuItemListener(CLEAR_RECENTS, null, FILE_MENU));
+        private final Separator clearListSeparator = new Separator("menu");
 
         public FileMenu() {
             super("File");
@@ -211,13 +221,20 @@ public class Overlap2DMenuBar extends CustomMenuBar {
             recentProjectsPopupMenu = new PopupMenu();
             recentProjectsMenuItem.setSubMenu(recentProjectsPopupMenu);
             addItem(recentProjectsMenuItem);
-            recentProjectsMenuItems = new Array<>();
             PreferencesManager prefs = PreferencesManager.getInstance();
             prefs.buildRecentHistory();
-            reInitRecent(prefs.getRecentHistory());
+            recentProjectsMenuItem.addListener(new InputListener() {
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                    PreferencesManager prefs = PreferencesManager.getInstance();
+                    prefs.buildRecentHistory();
+                    recentProjectsPopupMenu.clear();
+                    addRecentOpenedItems(prefs.getRecentHistory());
+                }
+            });
             //
             addSeparator();
-            addItem(new MenuItem("Exit", new MenuItemListener(EXIT, null , FILE_MENU)));
+            addItem(new MenuItem("Exit", new MenuItemListener(EXIT, null, FILE_MENU)));
             sceneMenuItems = new Array<>();
         }
 
@@ -244,26 +261,14 @@ public class Overlap2DMenuBar extends CustomMenuBar {
             return path2.getName() + " - [ " + path + "]";
         }
 
-        public void addRecent(ArrayList<String> paths) {
+        private void addRecentOpenedItems(ArrayList<String> paths) {
             for (String path : paths) {
-                MenuItem menuItem = new MenuItem(getFolderNameAndPath(path) , new MenuItemListener(RECENT_PROJECTS, path, FILE_MENU));
-                recentProjectsMenuItems.add(menuItem);
+                MenuItem menuItem = new MenuItem(getFolderNameAndPath(path), new MenuItemListener(RECENT_PROJECTS, path, FILE_MENU));
                 recentProjectsPopupMenu.addItem(menuItem);
             }
-        }
-
-        public void reInitRecent(ArrayList<String> paths) {
-            recentProjectsMenuItems.clear();
-            recentProjectsPopupMenu.clear();
-
-            addRecent(paths);
-
             if (paths.size() > 0) {
-            	recentProjectsPopupMenu.addSeparator();
+                recentProjectsPopupMenu.add(clearListSeparator).padTop(2).padBottom(2).fill().expand().row();
             }
-
-            MenuItem menuItem = new MenuItem("Clear list", new MenuItemListener(CLEAR_RECENTS, null, FILE_MENU));
-            recentProjectsMenuItems.add(menuItem);
             recentProjectsPopupMenu.addItem(menuItem);
         }
 
@@ -302,13 +307,13 @@ public class Overlap2DMenuBar extends CustomMenuBar {
     }
 
     public void addMenuItem(String menu, String subMenuName, String notificationName) {
-        if(menu.equals(FILE_MENU)) {
+        if (menu.equals(FILE_MENU)) {
             fileMenu.addItem(new MenuItem(subMenuName, new MenuItemListener(notificationName, null, menu)));
         }
-        if(menu.equals(EDIT_MENU)) {
+        if (menu.equals(EDIT_MENU)) {
             editMenu.addItem(new MenuItem(subMenuName, new MenuItemListener(notificationName, null, menu)));
         }
-        if(menu.equals(WINDOW_MENU)) {
+        if (menu.equals(WINDOW_MENU)) {
             windowMenu.addItem(new MenuItem(subMenuName, new MenuItemListener(notificationName, null, menu)));
         }
     }

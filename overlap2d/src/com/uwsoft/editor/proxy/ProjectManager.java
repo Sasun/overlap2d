@@ -26,7 +26,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter;
 import com.google.common.collect.Lists;
-import com.kotcrab.vis.ui.util.dialog.DialogUtils;
+import com.kotcrab.vis.ui.util.dialog.Dialogs;
 import com.kotcrab.vis.ui.widget.file.FileChooser;
 import com.kotcrab.vis.ui.widget.file.FileChooserAdapter;
 import com.puremvc.patterns.proxy.BaseProxy;
@@ -204,7 +204,7 @@ public class ProjectManager extends BaseProxy {
         PreferencesManager prefs = PreferencesManager.getInstance();
         prefs.buildRecentHistory();
         prefs.pushHistory(prjFilePath);
-        facade.sendNotification(Overlap2DMenuBar.RECENT_LIST_MODIFIED);
+//        facade.sendNotification(Overlap2DMenuBar.RECENT_LIST_MODIFIED);
 
         File prjFile = new File(prjFilePath);
         if (prjFile.exists() && !prjFile.isDirectory()) {
@@ -744,7 +744,7 @@ public class ProjectManager extends BaseProxy {
             totalWarnings += copyImageFilesIntoProject(files, resolutionEntryVO, performResize);
         }
         if (totalWarnings > 0) {
-            DialogUtils.showOKDialog(Sandbox.getInstance().getUIStage(), "Warning", totalWarnings + " images were not resized for smaller resolutions due to already small size ( < 3px )");
+            Dialogs.showOKDialog(Sandbox.getInstance().getUIStage(), "Warning", totalWarnings + " images were not resized for smaller resolutions due to already small size ( < 3px )");
         }
     }
 
